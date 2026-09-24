@@ -227,8 +227,13 @@ function ApplicationList({
 
   if (!hasScanned) {
     return (
-      <div className="empty-state">
-        <div className="empty-icon">◫</div>
+      <div className="empty-state scan-empty-state">
+        <div className="scan-radar" aria-hidden="true">
+          <span className="scan-radar-ring scan-radar-ring-one" />
+          <span className="scan-radar-ring scan-radar-ring-two" />
+          <span className="scan-radar-sweep" />
+          <span className="scan-radar-core" />
+        </div>
         <div className="empty-title">No applications scanned</div>
         <div className="empty-description">
           Click <strong>Scan for Applications</strong> to discover installed apps
