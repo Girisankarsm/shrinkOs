@@ -7,6 +7,7 @@
 use crate::error::{AppError, AppResult};
 use serde::{Deserialize, Serialize};
 use std::io::{Read, Write};
+use std::time::Instant;
 use tracing::{debug, warn};
 
 // ── Algorithm enum ────────────────────────────────────────────────────────
@@ -46,6 +47,14 @@ pub struct CompressionResult {
     /// True when the engine detected compressing would grow the data
     /// (e.g. already-compressed assets) and stored the original instead.
     pub was_incompressible: bool,
+    /// Selected Zstd level, or 0 when raw bytes were stored.
+    pub selected_level: i32,
+    /// Compression duration in milliseconds.
+    pub compression_time_ms: u64,
+    /// Decompression probe duration in milliseconds.
+    pub decompression_time_ms: u64,
+    /// Strategy decision recorded for diagnostics and future storage engines.
+    pub strategy: String,
 }
 
 impl CompressionResult {
@@ -95,6 +104,158 @@ pub struct ZstdEngine {
     level: i32,
 }
 
+/// Adaptive Storage Optimization Engine.
+///
+/// Samples large files, rejects high-entropy data early, then chooses the
+/// Zstd level with the best measured savings per unit of compression and
+/// decompression work. Chunking and deduplication can be added behind this
+/// strategy boundary later without changing the optimizer contract.
+pub struct AdaptiveStorageEngine {
+    default_level: i32,
+}
+
+const ASOE_LEVELS: &[i32] = &[1, 3, 6, 9];
+const SAMPLE_BLOCK_SIZE: usize = 64 * 1024;
+const MAX_SAMPLE_SIZE: usize = SAMPLE_BLOCK_SIZE * 3;
+
+impl AdaptiveStorageEngine {
+    pub fn new(default_level: i32) -> Self {
+        Self { default_level: default_level.clamp(1, 22) }
+    }
+
+    fn sample(data: &[u8]) -> Vec<u8> {
+        if data.len() <= MAX_SAMPLE_SIZE {
+            return data.to_vec();
+        }
+
+        let middle = data.len() / 2 - SAMPLE_BLOCK_SIZE / 2;
+        let last = data.len() - SAMPLE_BLOCK_SIZE;
+        let mut sample = Vec::with_capacity(MAX_SAMPLE_SIZE);
+        sample.extend_from_slice(&data[..SAMPLE_BLOCK_SIZE]);
+        sample.extend_from_slice(&data[middle..middle + SAMPLE_BLOCK_SIZE]);
+        sample.extend_from_slice(&data[last..]);
+        sample
+    }
+
+    fn entropy(data: &[u8]) -> f64 {
+        if data.is_empty() {
+            return 0.0;
+        }
+        let mut counts = [0usize; 256];
+        for byte in data {
+            counts[*byte as usize] += 1;
+        }
+        let len = data.len() as f64;
+        counts.iter().filter(|count| **count > 0).fold(0.0, |sum, count| {
+            let probability = *count as f64 / len;
+            sum - probability * probability.log2()
+        })
+    }
+
+    fn raw_result(data: &[u8], compression_time_ms: u64, strategy: &str) -> CompressionResult {
+        let size = data.len() as u64;
+        CompressionResult {
+            algorithm: CompressionAlgorithm::None,
+            data: data.to_vec(),
+            original_size: size,
+            compressed_size: size,
+            was_incompressible: true,
+            selected_level: 0,
+            compression_time_ms,
+            decompression_time_ms: 0,
+            strategy: strategy.to_string(),
+        }
+    }
+
+    pub fn compress(&self, data: &[u8]) -> AppResult<CompressionResult> {
+        if data.is_empty() {
+            return Ok(Self::raw_result(data, 0, "raw_empty"));
+        }
+
+        let strategy_started = Instant::now();
+        let sample = Self::sample(data);
+        let probe_started = Instant::now();
+        let probe = zstd::encode_all(sample.as_slice(), 1)
+            .map_err(|e| AppError::Compression(format!("zstd sample probe: {e}")))?;
+        let probe_time_ms = probe_started.elapsed().as_millis() as u64;
+        let probe_ratio = probe.len() as f64 / sample.len() as f64;
+
+        if Self::entropy(&sample) >= 7.99 && probe_ratio >= 0.999 {
+            return Ok(Self::raw_result(data, probe_time_ms, "raw_incompressible_sample"));
+        }
+
+        let mut best_level = self.default_level;
+        let mut best_score = f64::MIN;
+        for level in ASOE_LEVELS {
+            let started = Instant::now();
+            let candidate = zstd::encode_all(sample.as_slice(), *level)
+                .map_err(|e| AppError::Compression(format!("zstd sample benchmark: {e}")))?;
+            let compression_micros = started.elapsed().as_micros() as f64;
+            let mut decompression_micros = 0.0;
+            if candidate.len() < sample.len() {
+                let started = Instant::now();
+                zstd::decode_all(candidate.as_slice())
+                    .map_err(|e| AppError::Compression(format!("zstd sample decode: {e}")))?;
+                decompression_micros = started.elapsed().as_micros() as f64;
+            }
+            let saved = sample.len().saturating_sub(candidate.len()) as f64;
+            let score = saved / (compression_micros.max(1.0) + decompression_micros * 0.25);
+            if score > best_score {
+                best_score = score;
+                best_level = *level;
+            }
+        }
+
+        let compressed = zstd::encode_all(data, best_level)
+            .map_err(|e| AppError::Compression(format!("zstd adaptive encode: {e}")))?;
+        let mut selected_level = best_level;
+        let mut selected_strategy = "adaptive_zstd";
+        let mut selected_data = compressed;
+
+        // The sample score is only a prediction. Compare the candidate's
+        // final output with the configured baseline before storing anything.
+        if best_level != self.default_level {
+            let baseline_compressed = zstd::encode_all(data, self.default_level)
+                .map_err(|e| AppError::Compression(format!("zstd baseline guard: {e}")))?;
+            let baseline_is_raw = baseline_compressed.len() as f64 / data.len() as f64 >= INCOMPRESSIBLE_THRESHOLD;
+            let baseline_size = if baseline_is_raw { data.len() } else { baseline_compressed.len() };
+            if baseline_size <= selected_data.len() {
+                selected_level = self.default_level;
+                selected_strategy = "adaptive_zstd_baseline_guard";
+                selected_data = if baseline_is_raw {
+                    data.to_vec()
+                } else {
+                    baseline_compressed
+                };
+            }
+        }
+
+        let compression_time_ms = strategy_started.elapsed().as_millis() as u64;
+        if selected_data.len() >= data.len()
+            || selected_data.len() as f64 / data.len() as f64 >= INCOMPRESSIBLE_THRESHOLD
+        {
+            return Ok(Self::raw_result(data, compression_time_ms, "raw_after_adaptive"));
+        }
+
+        let decompression_started = Instant::now();
+        zstd::decode_all(selected_data.as_slice())
+            .map_err(|e| AppError::Compression(format!("zstd adaptive decode: {e}")))?;
+        let decompression_time_ms = decompression_started.elapsed().as_millis() as u64;
+
+        Ok(CompressionResult {
+            algorithm: CompressionAlgorithm::Zstd,
+            data: selected_data.clone(),
+            original_size: data.len() as u64,
+            compressed_size: selected_data.len() as u64,
+            was_incompressible: false,
+            selected_level,
+            compression_time_ms,
+            decompression_time_ms,
+            strategy: selected_strategy.to_string(),
+        })
+    }
+}
+
 impl ZstdEngine {
     pub fn new(level: i32) -> Self {
         let level = level.clamp(1, 22);
@@ -133,6 +294,10 @@ impl CompressionEngine for ZstdEngine {
                 original_size,
                 compressed_size: original_size,
                 was_incompressible: true,
+                selected_level: 0,
+                compression_time_ms: 0,
+                decompression_time_ms: 0,
+                strategy: "fixed_zstd_raw".to_string(),
             });
         }
 
@@ -149,6 +314,10 @@ impl CompressionEngine for ZstdEngine {
             original_size,
             compressed_size,
             was_incompressible: false,
+            selected_level: self.level,
+            compression_time_ms: 0,
+            decompression_time_ms: 0,
+            strategy: "fixed_zstd".to_string(),
         })
     }
 
@@ -195,6 +364,10 @@ impl CompressionEngine for NoopEngine {
             original_size: size,
             compressed_size: size,
             was_incompressible: true,
+            selected_level: 0,
+            compression_time_ms: 0,
+            decompression_time_ms: 0,
+            strategy: "raw".to_string(),
         })
     }
 
@@ -288,5 +461,38 @@ mod tests {
         assert_eq!(result.compressed_size, data.len() as u64);
         let restored = engine.decompress(&result.data, result.original_size).expect("decompress failed");
         assert_eq!(data.as_slice(), restored.as_slice());
+    }
+
+    #[test]
+    fn adaptive_strategy_records_level_and_roundtrips() {
+        let engine = AdaptiveStorageEngine::new(3);
+        let original = b"adaptive compression sample ".repeat(20_000);
+        let result = engine.compress(&original).expect("adaptive compression failed");
+        assert_eq!(result.algorithm, CompressionAlgorithm::Zstd);
+        assert!([1, 3, 6, 9].contains(&result.selected_level));
+        assert!(result.strategy.starts_with("adaptive_zstd"));
+        assert!(result.compressed_size < result.original_size);
+        let restored = ZstdEngine::new(result.selected_level)
+            .decompress(&result.data, result.original_size)
+            .expect("adaptive decompression failed");
+        assert_eq!(restored, original);
+    }
+
+    #[test]
+    fn adaptive_strategy_skips_high_entropy_data() {
+        let engine = AdaptiveStorageEngine::new(3);
+        let mut state = 0x9E3779B97F4A7C15u64;
+        let original: Vec<u8> = (0..200_000)
+            .map(|_| {
+                state ^= state << 7;
+                state ^= state >> 9;
+                state ^= state << 8;
+                state as u8
+            })
+            .collect();
+        let result = engine.compress(&original).expect("adaptive compression failed");
+        assert_eq!(result.algorithm, CompressionAlgorithm::None);
+        assert!(result.was_incompressible);
+        assert_eq!(result.selected_level, 0);
     }
 }

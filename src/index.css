@@ -15,35 +15,35 @@
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', monospace;
 
-  /* ── Color Tokens (Dark Mode, default) ─────────────────────────────── */
-  --color-bg-base:       hsl(220, 18%, 9%);
-  --color-bg-surface:    hsl(220, 16%, 13%);
-  --color-bg-elevated:   hsl(220, 14%, 17%);
-  --color-bg-overlay:    hsl(220, 12%, 22%);
+  /* ── ShrinkOS palette: Midnight, Royal, China, Dawn, Sky, and ivory ── */
+  --color-bg-base:       #081F5C;
+  --color-bg-surface:    #0D2B73;
+  --color-bg-elevated:   #173D88;
+  --color-bg-overlay:    #244D98;
 
-  --color-border:        hsl(220, 12%, 24%);
-  --color-border-subtle: hsl(220, 10%, 18%);
+  --color-border:        #4168AE;
+  --color-border-subtle: rgba(208, 227, 255, 0.16);
 
-  --color-text-primary:  hsl(220, 20%, 96%);
-  --color-text-secondary:hsl(220, 10%, 65%);
-  --color-text-muted:    hsl(220, 8%, 42%);
-  --color-text-inverse:  hsl(220, 18%, 9%);
+  --color-text-primary:  #FFF9F0;
+  --color-text-secondary:#D0E3FF;
+  --color-text-muted:    #BAD6EB;
+  --color-text-inverse:  #081F5C;
 
-  /* ── Brand Accent: Electric Violet ─────────────────────────────────── */
-  --color-accent-500:    hsl(258, 85%, 65%);
-  --color-accent-400:    hsl(258, 80%, 75%);
-  --color-accent-600:    hsl(258, 88%, 55%);
-  --color-accent-glow:   hsl(258, 85%, 65%, 0.25);
+  /* ── Brand Accent: Royal and China blue ───────────────────────────── */
+  --color-accent-500:    #7096D1;
+  --color-accent-400:    #D0E3FF;
+  --color-accent-600:    #334EAC;
+  --color-accent-glow:   rgba(186, 214, 235, 0.24);
 
   /* ── Semantic Colors ────────────────────────────────────────────────── */
-  --color-success:       hsl(155, 70%, 48%);
-  --color-success-bg:    hsl(155, 70%, 10%);
-  --color-warning:       hsl(38, 90%, 55%);
-  --color-warning-bg:    hsl(38, 90%, 10%);
-  --color-error:         hsl(5, 80%, 58%);
-  --color-error-bg:      hsl(5, 80%, 10%);
-  --color-info:          hsl(200, 80%, 55%);
-  --color-info-bg:       hsl(200, 80%, 10%);
+  --color-success:       #A8D5BA;
+  --color-success-bg:    rgba(168, 213, 186, 0.14);
+  --color-warning:       #F2D58A;
+  --color-warning-bg:    rgba(242, 213, 138, 0.14);
+  --color-error:         #FFB4A8;
+  --color-error-bg:      rgba(255, 180, 168, 0.14);
+  --color-info:          #BAD6EB;
+  --color-info-bg:       rgba(186, 214, 235, 0.14);
 
   /* ── Spacing Scale ──────────────────────────────────────────────────── */
   --space-1: 4px;
@@ -75,9 +75,9 @@
   --radius-full: 9999px;
 
   /* ── Shadows ────────────────────────────────────────────────────────── */
-  --shadow-sm:  0 1px 3px hsl(220, 30%, 4%, 0.4);
-  --shadow-md:  0 4px 16px hsl(220, 30%, 4%, 0.5);
-  --shadow-lg:  0 8px 32px hsl(220, 30%, 4%, 0.6);
+  --shadow-sm:  0 1px 3px rgba(8, 31, 92, 0.28);
+  --shadow-md:  0 4px 16px rgba(8, 31, 92, 0.34);
+  --shadow-lg:  0 8px 32px rgba(8, 31, 92, 0.42);
   --shadow-glow: 0 0 20px var(--color-accent-glow);
 
   /* ── Transitions ────────────────────────────────────────────────────── */
@@ -88,16 +88,16 @@
 
 /* Light mode override */
 [data-theme="light"] {
-  --color-bg-base:       hsl(220, 20%, 97%);
-  --color-bg-surface:    hsl(220, 18%, 100%);
-  --color-bg-elevated:   hsl(220, 16%, 95%);
-  --color-bg-overlay:    hsl(220, 14%, 90%);
-  --color-border:        hsl(220, 12%, 86%);
-  --color-border-subtle: hsl(220, 10%, 92%);
-  --color-text-primary:  hsl(220, 20%, 12%);
-  --color-text-secondary:hsl(220, 10%, 38%);
-  --color-text-muted:    hsl(220, 8%, 58%);
-  --color-text-inverse:  hsl(220, 20%, 97%);
+  --color-bg-base:       #FFF9F0;
+  --color-bg-surface:    #F7F2EB;
+  --color-bg-elevated:   #EDF1F6;
+  --color-bg-overlay:    #D0E3FF;
+  --color-border:        #BAD6EB;
+  --color-border-subtle: rgba(51, 78, 172, 0.14);
+  --color-text-primary:  #081F5C;
+  --color-text-secondary:#334EAC;
+  --color-text-muted:    #7096D1;
+  --color-text-inverse:  #FFF9F0;
 }
 
 /* ── Reset & Base ─────────────────────────────────────────────────────── */
@@ -194,13 +194,19 @@ body {
 .sidebar-logo-icon {
   width: 32px;
   height: 32px;
-  background: linear-gradient(135deg, var(--color-accent-600), var(--color-accent-400));
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: var(--shadow-glow);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+.sidebar-logo-icon img {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .sidebar-logo-text {
@@ -398,7 +404,7 @@ body {
 }
 
 .storage-bar-segment.used {
-  background: linear-gradient(90deg, hsl(220, 10%, 35%), hsl(220, 10%, 45%));
+  background: linear-gradient(90deg, var(--color-bg-overlay), var(--color-text-muted));
 }
 
 .storage-bar-segment.vault {
@@ -848,7 +854,7 @@ body {
 /* ── Announcement Banner (Milestone notice) ────────────────────────────── */
 .milestone-banner {
   background: linear-gradient(135deg, var(--color-accent-glow), transparent);
-  border: 1px solid hsl(258, 85%, 65%, 0.3);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: var(--space-3) var(--space-4);
   font-size: var(--text-xs);

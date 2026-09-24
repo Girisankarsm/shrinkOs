@@ -9,7 +9,7 @@
 ///   3. Original files are preserved until verification passes.
 ///   4. On any failure, the original application is fully recoverable.
 
-use crate::core::compression::{CompressionAlgorithm, ZstdEngine, CompressionEngine};
+use crate::core::compression::{engine_for, AdaptiveStorageEngine};
 use crate::core::manifests::{AppManifest, AppStatus, CompatibilityRating, ManifestFile};
 use crate::core::storage::analyze_application;
 use crate::database::Database;
@@ -172,7 +172,7 @@ impl Optimizer {
         progress.phase = OptimizationPhase::Compressing;
         self.emit_progress(&progress_registry, progress.clone());
 
-        let engine = ZstdEngine::new(self.config.compression_level);
+        let strategy = AdaptiveStorageEngine::new(self.config.compression_level);
         let mut manifest_files: Vec<ManifestFile> = Vec::new();
 
         for file_entry in &analysis.files {
@@ -203,7 +203,7 @@ impl Optimizer {
                 .map_err(|e| AppError::Io(format!("read '{}': {e}", src_path.display())))?;
 
             // Compress (the engine auto-detects incompressible data).
-            let compressed = engine.compress(&original_data)?;
+            let compressed = strategy.compress(&original_data)?;
 
             // Write compressed file to vault.
             let dest_path = app_vault_dir.join(&file_entry.relative_path);
@@ -220,7 +220,10 @@ impl Optimizer {
                 stored_size: compressed.compressed_size,
                 original_hash,
                 compression: compressed.algorithm,
-                compression_level: self.config.compression_level,
+                compression_level: compressed.selected_level,
+                compression_time_ms: compressed.compression_time_ms,
+                decompression_time_ms: compressed.decompression_time_ms,
+                strategy: compressed.strategy,
             });
         }
 
@@ -241,16 +244,12 @@ impl Optimizer {
             let stored_data = std::fs::read(&stored_path)
                 .map_err(|e| AppError::Io(format!("verify read: {e}")))?;
 
-            let decompressed = match mf.compression {
-                CompressionAlgorithm::None => stored_data.clone(),
-                CompressionAlgorithm::Zstd => {
-                    engine.decompress(&stored_data, mf.original_size)
-                        .map_err(|e| AppError::IntegrityFailure(format!(
-                            "decompression during verify failed for '{}': {e}",
-                            mf.relative_path
-                        )))?
-                }
-            };
+            let engine = engine_for(mf.compression, mf.compression_level);
+            let decompressed = engine.decompress(&stored_data, mf.original_size)
+                .map_err(|e| AppError::IntegrityFailure(format!(
+                    "decompression during verify failed for '{}': {e}",
+                    mf.relative_path
+                )))?;
 
             let actual_hash = hash_bytes(&decompressed);
             if actual_hash != mf.original_hash {
@@ -318,8 +317,6 @@ impl Optimizer {
 
         let app_vault_dir = PathBuf::from(&manifest.vault_path);
         let original_path = PathBuf::from(&manifest.original_path);
-        let engine = ZstdEngine::new(self.config.compression_level);
-
         let files_total = manifest.files.len() as u64;
         let mut progress = OptimizationProgress::new(app_id, files_total, manifest.stored_size);
         progress.phase = OptimizationPhase::Compressing; // reuse for decompress phase
@@ -339,12 +336,8 @@ impl Optimizer {
             let stored_data = std::fs::read(&stored_path)
                 .map_err(|e| AppError::Io(format!("read vault file: {e}")))?;
 
-            let restored_data = match mf.compression {
-                CompressionAlgorithm::None => stored_data,
-                CompressionAlgorithm::Zstd => {
-                    engine.decompress(&stored_data, mf.original_size)?
-                }
-            };
+            let engine = engine_for(mf.compression, mf.compression_level);
+            let restored_data = engine.decompress(&stored_data, mf.original_size)?;
 
             // Verify integrity before writing.
             let actual_hash = hash_bytes(&restored_data);

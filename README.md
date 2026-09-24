@@ -12,17 +12,18 @@ ShrinkOS is a macOS Tauri application that compresses application files into a l
 
 ## How Space Reduction Works
 
-ShrinkOS scans each selected application, compresses eligible files with Zstandard, and stores the compressed files in its vault. Already-compressed files are kept in their original form. Reported savings equal the original file size minus the stored size. The original application is never replaced during optimization.
+ShrinkOS scans each selected application, classifies file content, samples larger files, and selects an efficient Zstandard level. Already-compressed or high-entropy files are kept in their original form. Reported savings equal the original file size minus the stored size. The original application is never replaced during optimization.
 
 ## Compression Architecture
 
 1. Analyze the selected `.app` bundle and classify its files.
-2. Compress eligible files with Zstandard (Zstd).
-3. Store compressed files and a manifest in the local ShrinkOS vault.
-4. Verify restored content with Blake3 hashes.
-5. Restore files to the original path on request.
+2. Sample larger files and estimate entropy and compressibility.
+3. Benchmark Zstandard levels 1, 3, 6, and 9 on representative samples.
+4. Compare the selected result with the configured baseline and store only the smaller safe representation.
+5. Record size, ratio, level, timings, and strategy in the manifest.
+6. Verify restored content with Blake3 hashes, then restore files to the original path on request.
 
-The current MVP uses file-by-file compression. Chunking, deduplication, cloud storage, and filesystem virtualization are not implemented.
+The current MVP uses file-by-file adaptive compression. Chunking, deduplication, cloud storage, and filesystem virtualization are not implemented.
 
 ## Run and Test
 

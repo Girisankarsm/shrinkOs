@@ -1,4 +1,4 @@
-use appvault_lib::core::compression::CompressionEngine;
+use appvault_lib::core::compression::{CompressionEngine, ZstdEngine};
 use appvault_lib::core::storage::{analyze_application, directory_size};
 use appvault_lib::database::Database;
 use appvault_lib::platform;
@@ -32,6 +32,20 @@ async fn real_macos_app_optimize_verify_restore_smoke() {
     let original_size = analysis.total_size_bytes;
     let file_count = analysis.file_count;
 
+    let baseline_started = Instant::now();
+    let mut baseline_stored_size = 0u64;
+    let mut baseline_sizes = HashMap::new();
+    for file in &analysis.files {
+        let data = fs::read(source_app.join(&file.relative_path)).expect("baseline file read failed");
+        let baseline_size = ZstdEngine::new(3)
+            .compress(&data)
+            .expect("baseline compression failed")
+            .compressed_size;
+        baseline_stored_size += baseline_size;
+        baseline_sizes.insert(file.relative_path.clone(), baseline_size);
+    }
+    let baseline_time_ms = baseline_started.elapsed().as_millis();
+
     let db = Arc::new(Database::open(&vault_path).expect("database initialization failed"));
     let progress: ProgressRegistry = Arc::new(Mutex::new(HashMap::new()));
     let optimizer = Optimizer::new(vault_path.clone(), Config::default());
@@ -46,6 +60,16 @@ async fn real_macos_app_optimize_verify_restore_smoke() {
     let compressed_size = manifest.stored_size;
     let app_id = manifest.app_id.clone();
     let vault_size = directory_size(&vault_path).expect("vault size measurement failed");
+    let adaptive_compression_time_ms: u64 = manifest.files.iter().map(|file| file.compression_time_ms).sum();
+    let adaptive_decompression_time_ms: u64 = manifest.files.iter().map(|file| file.decompression_time_ms).sum();
+    let mut selected_levels = HashMap::<i32, usize>::new();
+    let mut adaptive_worse_files = 0usize;
+    for file in &manifest.files {
+        *selected_levels.entry(file.compression_level).or_default() += 1;
+        if file.stored_size > baseline_sizes.get(&file.relative_path).copied().unwrap_or(file.stored_size) {
+            adaptive_worse_files += 1;
+        }
+    }
 
     assert_eq!(manifest.original_size, original_size);
     assert_eq!(manifest.file_count, file_count);
@@ -69,14 +93,21 @@ async fn real_macos_app_optimize_verify_restore_smoke() {
     assert_same_files(&source_app, &restore_app, &analysis.files);
 
     println!(
-        "SMOKE_MEASUREMENTS original_size={} file_count={} chunks=NOT_IMPLEMENTED duplicate_chunks=NOT_IMPLEMENTED compressed_size={} vault_size={} actual_space_saved={} compression_time_ms={} restore_time_ms={} integrity=PASS",
+        "SMOKE_MEASUREMENTS original_size={} file_count={} baseline_fixed_zstd_size={} baseline_fixed_zstd_time_ms={} adaptive_size={} adaptive_vault_size={} adaptive_space_saved={} adaptive_vs_fixed_saved={} adaptive_worse_files={} adaptive_wall_time_ms={} adaptive_file_compression_time_ms={} adaptive_decompression_probe_time_ms={} restore_time_ms={} selected_levels={:?} integrity=PASS",
         original_size,
         file_count,
+        baseline_stored_size,
+        baseline_time_ms,
         compressed_size,
         vault_size,
         manifest.space_saved,
+        baseline_stored_size.saturating_sub(compressed_size),
+        adaptive_worse_files,
         compression_time_ms,
+        adaptive_compression_time_ms,
+        adaptive_decompression_time_ms,
         restore_time_ms,
+        selected_levels,
     );
 }
 

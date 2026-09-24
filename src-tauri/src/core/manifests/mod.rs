@@ -7,7 +7,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-pub const MANIFEST_SCHEMA_VERSION: u32 = 1;
+pub const MANIFEST_SCHEMA_VERSION: u32 = 2;
 
 // ── Compatibility rating ──────────────────────────────────────────────────
 
@@ -67,6 +67,15 @@ pub struct ManifestFile {
     pub compression: CompressionAlgorithm,
     /// Compression level used (0 = not compressed).
     pub compression_level: i32,
+    /// Compression duration measured for this file.
+    #[serde(default)]
+    pub compression_time_ms: u64,
+    /// Decompression probe duration measured for this file.
+    #[serde(default)]
+    pub decompression_time_ms: u64,
+    /// Adaptive strategy selected for this file.
+    #[serde(default)]
+    pub strategy: String,
 }
 
 // ── The manifest itself ───────────────────────────────────────────────────
@@ -199,6 +208,9 @@ mod tests {
             original_hash: "deadbeef".into(),
             compression: CompressionAlgorithm::Zstd,
             compression_level: 3,
+            compression_time_ms: 0,
+            decompression_time_ms: 0,
+            strategy: "fixed_zstd".into(),
         });
         m.finalize();
         m
