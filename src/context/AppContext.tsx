@@ -13,7 +13,7 @@ interface AppContextValue {
   permissionStatus: PermissionStatus | null;
   isLoading: boolean;
   error: string | null;
-  refresh: () => Promise<void>;
+  refresh: (silent?: boolean) => Promise<void>;
 }
 
 // ── Context ───────────────────────────────────────────────────────────────
@@ -50,8 +50,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('appvault-discovered-apps', JSON.stringify(apps));
   }, []);
 
-  const refresh = useCallback(async () => {
-    setIsLoading(true);
+  const refresh = useCallback(async (silent = false) => {
+    if (!silent) setIsLoading(true);
     setError(null);
     try {
       const [info, disk, apps, vault, permissions] = await Promise.all([
@@ -76,6 +76,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     refresh();
+  }, [refresh]);
+
+  useEffect(() => {
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === 'visible') void refresh(true);
+    };
+    const interval = window.setInterval(refreshWhenVisible, 5000);
+    document.addEventListener('visibilitychange', refreshWhenVisible);
+    window.addEventListener('focus', refreshWhenVisible);
+
+    return () => {
+      window.clearInterval(interval);
+      document.removeEventListener('visibilitychange', refreshWhenVisible);
+      window.removeEventListener('focus', refreshWhenVisible);
+    };
   }, [refresh]);
 
   return (

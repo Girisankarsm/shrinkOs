@@ -205,7 +205,7 @@ function RefreshButton() {
     <button
       id="btn-refresh-dashboard"
       className="btn btn-secondary btn-sm"
-      onClick={refresh}
+      onClick={() => refresh()}
       disabled={isLoading}
       title="Refresh statistics"
     >
