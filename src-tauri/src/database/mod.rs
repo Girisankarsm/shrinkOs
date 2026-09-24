@@ -234,6 +234,27 @@ impl Database {
         }
     }
 
+    pub fn get_application_by_original_path(&self, original_path: &str) -> AppResult<Option<AppManifest>> {
+        let conn = self.conn.lock().unwrap();
+        let result = conn.query_row(
+            "SELECT manifest_json, status FROM applications WHERE original_path = ?1 ORDER BY CASE status WHEN 'unmanaged' THEN 0 ELSE 1 END, last_accessed DESC LIMIT 1",
+            params![original_path],
+            |row| Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?)),
+        );
+
+        match result {
+            Ok((json, status)) => {
+                let mut manifest = serde_json::from_str::<AppManifest>(&json)
+                    .map_err(|e| AppError::Database(format!("deserialize: {e}")))?;
+                manifest.status = serde_json::from_str(&format!("\"{status}\""))
+                    .map_err(|e| AppError::Database(format!("deserialize status: {e}")))?;
+                Ok(Some(manifest))
+            }
+            Err(rusqlite::Error::QueryReturnedNoRows) => Ok(None),
+            Err(e) => Err(AppError::Database(e.to_string())),
+        }
+    }
+
     pub fn update_status(&self, app_id: &str, status: AppStatus) -> AppResult<()> {
         let status_str = serde_json::to_string(&status)
             .map_err(|e| AppError::Database(format!("serialize status: {e}")))?

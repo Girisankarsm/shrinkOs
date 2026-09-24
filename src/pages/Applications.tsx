@@ -200,9 +200,14 @@ function ApplicationList({
   hasScanned: boolean;
   scanning: boolean;
 }) {
+  const restoredPaths = new Set(
+    managedApps
+      .filter(app => app.status === 'unmanaged')
+      .map(app => app.original_path),
+  );
   const managedPaths = new Set(
     managedApps
-      .filter(app => app.status === 'managed')
+      .filter(app => app.status === 'managed' && !restoredPaths.has(app.original_path))
       .map(app => app.original_path),
   );
 

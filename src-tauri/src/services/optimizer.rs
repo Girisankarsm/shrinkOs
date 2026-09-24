@@ -134,13 +134,19 @@ impl Optimizer {
 
         let analysis = analyze_application(&app_path)?;
 
-        let mut manifest = AppManifest::new(
-            display_name.clone(),
-            app_path.display().to_string(),
-            self.vault_app_path(&app_path).display().to_string(),
-            platform_name.to_string(),
-        );
+        let mut manifest = db
+            .get_application_by_original_path(&app_path.display().to_string())?
+            .unwrap_or_else(|| AppManifest::new(
+                display_name.clone(),
+                app_path.display().to_string(),
+                self.vault_app_path(&app_path).display().to_string(),
+                platform_name.to_string(),
+            ));
+        manifest.name = display_name;
         manifest.version = version;
+        manifest.vault_path = self.vault_app_path(&app_path).display().to_string();
+        manifest.files.clear();
+        manifest.notes.clear();
         manifest.compatibility = compat;
         manifest.status = AppStatus::Analyzing;
 
