@@ -701,6 +701,37 @@ body {
   line-height: 1.6;
 }
 
+.scan-state {
+  min-height: 280px;
+}
+
+.scan-orbit {
+  width: 52px;
+  height: 52px;
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-accent-400);
+  border-right-color: var(--color-accent-500);
+  border-radius: 50%;
+  position: relative;
+  animation: scan-rotate 1.1s linear infinite;
+  box-shadow: 0 0 16px var(--color-accent-glow);
+}
+
+.scan-orbit-dot {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  top: -4px;
+  left: 21px;
+  border-radius: 50%;
+  background: var(--color-accent-400);
+  box-shadow: 0 0 10px var(--color-accent-400);
+}
+
+@keyframes scan-rotate {
+  to { transform: rotate(360deg); }
+}
+
 /* ── Loading ──────────────────────────────────────────────────────────── */
 .spinner {
   width: 20px;

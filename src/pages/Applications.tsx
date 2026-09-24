@@ -7,6 +7,7 @@ type Phase = 'list' | 'analyzing' | 'confirm' | 'progress' | 'done' | 'error';
 export default function ApplicationsPage() {
   const { managedApps, discoveredApps, setDiscoveredApps, refresh } = useAppContext();
   const [scanning, setScanning] = useState(false);
+  const [hasScanned, setHasScanned] = useState(false);
   const [selectedApp, setSelectedApp] = useState<DiscoveredApp | null>(null);
   const [analysis, setAnalysis] = useState<ApplicationAnalysis | null>(null);
   const [phase, setPhase] = useState<Phase>('list');
@@ -21,6 +22,7 @@ export default function ApplicationsPage() {
     try {
       const apps = await api.discoverApplications();
       setDiscoveredApps(apps.filter(a => a.compatibility !== 'UNSUPPORTED'));
+      setHasScanned(true);
     } catch (e: unknown) {
       setError(formatApiError(e));
     } finally {
@@ -135,7 +137,8 @@ export default function ApplicationsPage() {
             discovered={discoveredApps}
             managedApps={managedApps}
             onAnalyze={handleAnalyze}
-            hasScanned={discoveredApps.length > 0 || scanning}
+            hasScanned={hasScanned}
+            scanning={scanning}
           />
         )}
 
@@ -189,14 +192,29 @@ export default function ApplicationsPage() {
 // ── Sub-components ─────────────────────────────────────────────────────────
 
 function ApplicationList({
-  discovered, managedApps, onAnalyze, hasScanned,
+  discovered, managedApps, onAnalyze, hasScanned, scanning,
 }: {
   discovered: DiscoveredApp[];
   managedApps: ReturnType<typeof useAppContext>['managedApps'];
   onAnalyze: (app: DiscoveredApp) => void;
   hasScanned: boolean;
+  scanning: boolean;
 }) {
   const managedPaths = new Set(managedApps.map(a => a.original_path));
+
+  if (scanning && discovered.length === 0) {
+    return (
+      <div className="empty-state scan-state" aria-live="polite">
+        <div className="scan-orbit" aria-hidden="true">
+          <div className="scan-orbit-dot" />
+        </div>
+        <div className="empty-title">Scanning applications</div>
+        <div className="empty-description">
+          Looking through standard macOS application locations…
+        </div>
+      </div>
+    );
+  }
 
   if (!hasScanned) {
     return (
