@@ -200,6 +200,7 @@ function ApplicationList({
   hasScanned: boolean;
   scanning: boolean;
 }) {
+  const [sizeDescending, setSizeDescending] = useState(true);
   const restoredPaths = new Set(
     managedApps
       .filter(app => app.status === 'unmanaged')
@@ -255,6 +256,12 @@ function ApplicationList({
     );
   }
 
+  const sortedDiscovered = [...discovered].sort((left, right) =>
+    sizeDescending
+      ? right.size_bytes - left.size_bytes
+      : left.size_bytes - right.size_bytes,
+  );
+
   return (
     <div className="app-table-container">
       <div style={{ padding: 'var(--space-5)', borderBottom: '1px solid var(--color-border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -269,14 +276,24 @@ function ApplicationList({
         <thead>
           <tr>
             <th>Application</th>
-            <th>Size</th>
+            <th>
+              <button
+                className="table-sort-button"
+                type="button"
+                onClick={() => setSizeDescending(value => !value)}
+                title={sizeDescending ? 'Largest applications first' : 'Smallest applications first'}
+                aria-label={`Sort applications by size, ${sizeDescending ? 'smallest first' : 'largest first'}`}
+              >
+                Size {sizeDescending ? '↓' : '↑'}
+              </button>
+            </th>
             <th>Compatibility</th>
             <th>Status</th>
             <th>Action</th>
           </tr>
         </thead>
         <tbody>
-          {discovered.map(app => {
+          {sortedDiscovered.map(app => {
             const isManaged = managedPaths.has(app.path);
             return (
               <tr key={app.path}>
