@@ -14,7 +14,7 @@ use crate::core::manifests::{AppManifest, AppStatus, CompatibilityRating, Manife
 use crate::core::storage::analyze_application;
 use crate::database::Database;
 use crate::error::{AppError, AppResult};
-use crate::security::{assert_path_within, assert_sufficient_space, atomic_write, hash_bytes, hash_file, verify_file_hash};
+use crate::security::{assert_sufficient_space, atomic_write, hash_bytes, hash_file};
 use crate::platform;
 use crate::services::config::Config;
 use chrono::Utc;
@@ -22,7 +22,7 @@ use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use tokio::sync::watch;
-use tracing::{error, info, warn};
+use tracing::{info, warn};
 
 // ── Progress tracking ─────────────────────────────────────────────────────
 

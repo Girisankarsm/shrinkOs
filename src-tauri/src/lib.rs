@@ -47,6 +47,7 @@ pub fn run() {
 
             // Initialize database.
             let db = Arc::new(database::Database::open(&vault_path)?);
+            db.cleanup_duplicate_app_records()?;
 
             // Load or create config.
             let config = services::config::Config::load_or_default(&vault_path)?;

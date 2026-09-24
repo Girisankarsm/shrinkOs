@@ -28,7 +28,7 @@ pub struct DiscoveredApp {
 /// Scan the system for installable applications.
 #[tauri::command]
 pub async fn discover_applications(
-    state: State<'_, Mutex<AppState>>,
+    _state: State<'_, Mutex<AppState>>,
 ) -> AppResult<Vec<DiscoveredApp>> {
     let app_paths = platform::discover_applications()?;
 

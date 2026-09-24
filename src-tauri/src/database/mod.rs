@@ -212,6 +212,47 @@ impl Database {
         manifests
     }
 
+    pub fn cleanup_duplicate_app_records(&self) -> AppResult<()> {
+        let manifests = self.get_all_applications()?;
+        let mut keep_by_path = std::collections::HashMap::<String, AppManifest>::new();
+
+        for manifest in manifests {
+            let replace = match keep_by_path.get(&manifest.original_path) {
+                None => true,
+                Some(current) => {
+                    matches!(manifest.status, AppStatus::Unmanaged)
+                        && !matches!(current.status, AppStatus::Unmanaged)
+                }
+            };
+            if replace {
+                keep_by_path.insert(manifest.original_path.clone(), manifest);
+            }
+        }
+
+        let keep_ids: std::collections::HashSet<String> = keep_by_path
+            .values()
+            .map(|manifest| manifest.app_id.clone())
+            .collect();
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn
+            .prepare("SELECT app_id FROM applications")
+            .map_err(|e| AppError::Database(format!("prepare duplicate cleanup: {e}")))?;
+        let ids: Vec<String> = stmt
+            .query_map([], |row| row.get(0))
+            .map_err(|e| AppError::Database(format!("query duplicate cleanup: {e}")))?
+            .collect::<Result<_, _>>()
+            .map_err(|e| AppError::Database(format!("read duplicate cleanup: {e}")))?;
+        drop(stmt);
+
+        for app_id in ids {
+            if !keep_ids.contains(&app_id) {
+                conn.execute("DELETE FROM applications WHERE app_id = ?1", params![app_id])
+                    .map_err(|e| AppError::Database(format!("delete duplicate: {e}")))?;
+            }
+        }
+        Ok(())
+    }
+
     pub fn get_application(&self, app_id: &str) -> AppResult<Option<AppManifest>> {
         let conn = self.conn.lock().unwrap();
         let result = conn.query_row(

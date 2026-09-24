@@ -66,7 +66,7 @@ pub fn cancel_optimization(
     app_id: String,
     cancel_reg: State<'_, CancelRegistry>,
 ) -> AppResult<()> {
-    if let Ok(mut map) = cancel_reg.lock() {
+    if let Ok(map) = cancel_reg.lock() {
         if let Some(tx) = map.get(&app_id) {
             let _ = tx.send(true);
         }

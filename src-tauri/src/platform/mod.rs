@@ -5,7 +5,7 @@
 
 #[cfg(target_os = "macos")]
 pub mod macos {
-    use crate::core::manifests::{AppManifest, CompatibilityRating};
+    use crate::core::manifests::CompatibilityRating;
     use crate::error::{AppError, AppResult};
     use std::path::{Path, PathBuf};
     use tracing::{debug, warn};
