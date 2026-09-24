@@ -9,7 +9,7 @@ import SettingsPage from './pages/Settings';
 import { api } from './lib/api';
 import { useAppContext } from './context/AppContext';
 
-type Page = 'dashboard' | 'applications' | 'optimize' | 'restore' | 'settings';
+type Page = 'dashboard' | 'applications' | 'restore' | 'settings';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<Page>('dashboard');
@@ -22,7 +22,6 @@ export default function App() {
         <main className="main-content">
           {currentPage === 'dashboard'    && <Dashboard />}
           {currentPage === 'applications' && <ApplicationsPage />}
-          {currentPage === 'optimize'     && <ApplicationsPage />}
           {currentPage === 'restore'      && <OptimizePage />}
           {currentPage === 'settings'     && <SettingsPage />}
         </main>

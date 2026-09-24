@@ -3,7 +3,7 @@ import { formatBytes } from '../lib/api';
 import { useAppContext } from '../context/AppContext';
 import shrinkosLogo from '../../support/logo/shrinkos-logo.svg';
 
-type Page = 'dashboard' | 'applications' | 'optimize' | 'restore' | 'settings';
+type Page = 'dashboard' | 'applications' | 'restore' | 'settings';
 
 interface SidebarProps {
   currentPage: Page;
@@ -13,7 +13,6 @@ interface SidebarProps {
 const NAV_ITEMS: { id: Page; label: string; icon: string }[] = [
   { id: 'dashboard',    label: 'Dashboard',    icon: '⊞' },
   { id: 'applications', label: 'Applications', icon: '◫' },
-  { id: 'optimize',     label: 'Optimize',     icon: '◈' },
   { id: 'restore',      label: 'Restore',      icon: '↩' },
   { id: 'settings',     label: 'Settings',     icon: '◉' },
 ];
