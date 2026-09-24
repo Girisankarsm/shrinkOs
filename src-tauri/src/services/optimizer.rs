@@ -314,7 +314,7 @@ impl Optimizer {
         db: Arc<Database>,
         progress_registry: ProgressRegistry,
     ) -> AppResult<()> {
-        let manifest = db
+        let mut manifest = db
             .get_application(app_id)?
             .ok_or_else(|| AppError::AppNotFound(app_id.to_string()))?;
 
@@ -362,7 +362,9 @@ impl Optimizer {
         }
 
         // Update manifest status.
-        db.update_status(app_id, AppStatus::Unmanaged)?;
+        manifest.status = AppStatus::Unmanaged;
+        manifest.last_accessed = Utc::now();
+        db.upsert_application(&manifest)?;
         db.log_operation(Some(app_id), "restore", "success", None)?;
 
         progress.phase = OptimizationPhase::Done;

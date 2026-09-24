@@ -4,6 +4,8 @@ import { useAppContext } from '../context/AppContext';
 
 export default function OptimizePage() {
   const { managedApps, refresh } = useAppContext();
+  const activeApps = managedApps.filter(app => app.status === 'managed');
+  const restoredApps = managedApps.filter(app => app.status === 'unmanaged');
   const [restoring, setRestoring] = useState<string | null>(null);
   const [progress, setProgress] = useState<OptimizationProgress | null>(null);
   const [restored, setRestored] = useState<string | null>(null);
@@ -80,7 +82,7 @@ export default function OptimizePage() {
           </div>
         )}
 
-        {managedApps.length === 0 ? (
+        {activeApps.length === 0 ? (
           <div className="empty-state">
             <div className="empty-icon">◈</div>
             <div className="empty-title">No managed applications</div>
@@ -92,7 +94,7 @@ export default function OptimizePage() {
           <div className="app-table-container">
             <div style={{ padding: 'var(--space-5)', borderBottom: '1px solid var(--color-border-subtle)' }}>
               <div className="card-title" style={{ marginBottom: 0 }}>
-                Managed Applications ({managedApps.length})
+                Managed Applications ({activeApps.length})
               </div>
             </div>
             <table className="app-table">
@@ -107,7 +109,7 @@ export default function OptimizePage() {
                 </tr>
               </thead>
               <tbody>
-                {managedApps.map(app => (
+                {activeApps.map(app => (
                   <tr key={app.app_id}>
                     <td>
                       <div className="app-name-cell">
@@ -137,6 +139,44 @@ export default function OptimizePage() {
                         }
                       </button>
                     </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {restoredApps.length > 0 && (
+          <div className="app-table-container" style={{ marginTop: 'var(--space-6)' }}>
+            <div style={{ padding: 'var(--space-5)', borderBottom: '1px solid var(--color-border-subtle)' }}>
+              <div className="card-title" style={{ marginBottom: 0 }}>
+                Restored Applications ({restoredApps.length})
+              </div>
+            </div>
+            <table className="app-table">
+              <thead>
+                <tr>
+                  <th>Application</th>
+                  <th>Original Size</th>
+                  <th>Restored Location</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {restoredApps.map(app => (
+                  <tr key={`restored-${app.app_id}`}>
+                    <td>
+                      <div className="app-name-cell">
+                        <div className="app-icon">📦</div>
+                        <div>
+                          <div className="app-name">{app.name}</div>
+                          {app.version && <div className="app-version">v{app.version}</div>}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="font-mono text-sm">{formatBytes(app.original_size)}</td>
+                    <td className="font-mono text-xs">{app.original_path}</td>
+                    <td><span className="badge badge-safe">✓ Restored</span></td>
                   </tr>
                 ))}
               </tbody>
