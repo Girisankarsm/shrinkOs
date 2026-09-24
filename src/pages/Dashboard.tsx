@@ -10,7 +10,7 @@ export default function Dashboard() {
       <div className="page-body" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-4)' }}>
           <div className="spinner spinner-lg" />
-          <span className="text-secondary text-sm">Loading AppVault…</span>
+          <span className="text-secondary text-sm">Loading ShrinkOS…</span>
         </div>
       </div>
     );
@@ -44,7 +44,7 @@ export default function Dashboard() {
           <div className="alert alert-error mb-6">
             <span>⚠</span>
             <div>
-              <strong>AppVault data is unavailable</strong>
+              <strong>ShrinkOS data is unavailable</strong>
               <div>{error}</div>
               <div style={{ marginTop: 4 }}>
                 Launch the native Tauri app with <strong>npm run desktop</strong>; the browser preview cannot access macOS disk or application bundles.
@@ -66,7 +66,7 @@ export default function Dashboard() {
           <StatCard label="Total Disk" value={displayBytes(total)} />
           <StatCard label="Used" value={displayBytes(used)} sub={error ? 'Unavailable' : `${((usedFraction) * 100).toFixed(1)}% of total`} />
           <StatCard label="Available" value={displayBytes(available)} variant="accent" />
-          <StatCard label="AppVault Size" value={displayBytes(vaultBytes)} />
+          <StatCard label="ShrinkOS Size" value={displayBytes(vaultBytes)} />
           <StatCard label="Original Apps" value={displayBytes(originalBytes)} />
           <StatCard
             label="Space Saved"
@@ -96,7 +96,7 @@ export default function Dashboard() {
             </div>
             <div className="legend-item">
               <div className="legend-dot" style={{ background: 'var(--color-accent-500)' }} />
-              AppVault — {displayBytes(vaultBytes)}
+              ShrinkOS — {displayBytes(vaultBytes)}
             </div>
             <div className="legend-item">
               <div className="legend-dot" style={{ background: 'var(--color-bg-overlay)' }} />
@@ -113,7 +113,7 @@ export default function Dashboard() {
               <div className="empty-title">No applications managed yet</div>
               <div className="empty-description">
                 Go to <strong>Applications</strong> to discover and optimize installed apps.
-                AppVault uses real Zstd compression — savings depend on the application's content.
+                ShrinkOS uses real Zstd compression — savings depend on the application's content.
               </div>
             </div>
           </div>

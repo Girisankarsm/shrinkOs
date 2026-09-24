@@ -42,7 +42,7 @@ export default function SettingsPage() {
       <header className="page-header">
         <div>
           <h1 className="page-title">Settings</h1>
-          <div className="page-subtitle">Configure AppVault behavior</div>
+          <div className="page-subtitle">Configure ShrinkOS behavior</div>
         </div>
         <button
           id="btn-save-settings"

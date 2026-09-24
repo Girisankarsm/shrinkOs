@@ -1,6 +1,6 @@
-# AppVault
+# ShrinkOS
 
-AppVault is a macOS Tauri application that compresses application files into a local vault and restores them after integrity verification.
+ShrinkOS is a macOS Tauri application that compresses application files into a local vault and restores them after integrity verification.
 
 ## Version Changes
 
@@ -12,13 +12,13 @@ AppVault is a macOS Tauri application that compresses application files into a l
 
 ## How Space Reduction Works
 
-AppVault scans each selected application, compresses eligible files with Zstandard, and stores the compressed files in its vault. Already-compressed files are kept in their original form. Reported savings equal the original file size minus the stored size. The original application is never replaced during optimization.
+ShrinkOS scans each selected application, compresses eligible files with Zstandard, and stores the compressed files in its vault. Already-compressed files are kept in their original form. Reported savings equal the original file size minus the stored size. The original application is never replaced during optimization.
 
 ## Compression Architecture
 
 1. Analyze the selected `.app` bundle and classify its files.
 2. Compress eligible files with Zstandard (Zstd).
-3. Store compressed files and a manifest in the local AppVault vault.
+3. Store compressed files and a manifest in the local ShrinkOS vault.
 4. Verify restored content with Blake3 hashes.
 5. Restore files to the original path on request.
 
@@ -35,10 +35,10 @@ For a safe test copy:
 
 ```sh
 mkdir -p "$HOME/Applications"
-cp -R "/Applications/The Unarchiver.app" "$HOME/Applications/AppVault Test.app"
+cp -R "/Applications/The Unarchiver.app" "$HOME/Applications/ShrinkOS Test.app"
 ```
 
-In the native AppVault window: scan, analyze, optimize, verify integrity, then restore the test copy. The scan checks `/Applications`, nested application folders, `/System/Applications`, and `~/Applications`.
+In the native ShrinkOS window: scan, analyze, optimize, verify integrity, then restore the test copy. The scan checks `/Applications`, nested application folders, `/System/Applications`, and `~/Applications`.
 
 Build the macOS application with:
 
@@ -46,7 +46,7 @@ Build the macOS application with:
 npm run tauri build
 ```
 
-Output: `src-tauri/target/release/bundle/macos/AppVault.app`
+Output: `src-tauri/target/release/bundle/macos/ShrinkOS.app`
 
 ## Next Steps
 

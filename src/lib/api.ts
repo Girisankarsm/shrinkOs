@@ -10,7 +10,7 @@ function ensureTauriRuntime(): void {
 
   if (!hasTauriBridge && !isTauriProtocol) {
     throw new Error(
-      "AppVault must be launched from the native Tauri desktop app. Please run the desktop app instead of the web preview."
+      "ShrinkOS must be launched from the native Tauri desktop app. Please run the desktop app instead of the web preview."
     );
   }
 }

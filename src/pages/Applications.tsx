@@ -5,8 +5,7 @@ import { useAppContext } from '../context/AppContext';
 type Phase = 'list' | 'analyzing' | 'confirm' | 'progress' | 'done' | 'error';
 
 export default function ApplicationsPage() {
-  const { managedApps, refresh } = useAppContext();
-  const [discovered, setDiscovered] = useState<DiscoveredApp[]>([]);
+  const { managedApps, discoveredApps, setDiscoveredApps, refresh } = useAppContext();
   const [scanning, setScanning] = useState(false);
   const [selectedApp, setSelectedApp] = useState<DiscoveredApp | null>(null);
   const [analysis, setAnalysis] = useState<ApplicationAnalysis | null>(null);
@@ -21,7 +20,7 @@ export default function ApplicationsPage() {
     setError(null);
     try {
       const apps = await api.discoverApplications();
-      setDiscovered(apps.filter(a => a.compatibility !== 'UNSUPPORTED'));
+      setDiscoveredApps(apps.filter(a => a.compatibility !== 'UNSUPPORTED'));
     } catch (e: unknown) {
       setError(String(e));
     } finally {
@@ -133,10 +132,10 @@ export default function ApplicationsPage() {
         {/* Phase: List */}
         {phase === 'list' && (
           <ApplicationList
-            discovered={discovered}
+            discovered={discoveredApps}
             managedApps={managedApps}
             onAnalyze={handleAnalyze}
-            hasScanned={discovered.length > 0 || scanning}
+            hasScanned={discoveredApps.length > 0 || scanning}
           />
         )}
 
@@ -206,7 +205,7 @@ function ApplicationList({
         <div className="empty-title">No applications scanned</div>
         <div className="empty-description">
           Click <strong>Scan for Applications</strong> to discover installed apps
-          in standard system locations. AppVault will never modify any app without your explicit confirmation.
+          in standard system locations. ShrinkOS will never modify any app without your explicit confirmation.
         </div>
       </div>
     );
@@ -353,7 +352,7 @@ function AnalysisConfirm({
             <div style={{ marginTop: 4 }}>
               {(ratio * 100).toFixed(0)}% of this application's files are already compressed
               (images, videos, archives, encrypted data). Compression savings may be minimal or negligible.
-              AppVault will still store the accurate result after measuring.
+              ShrinkOS will still store the accurate result after measuring.
             </div>
           </div>
         </div>
@@ -364,7 +363,7 @@ function AnalysisConfirm({
         <div>
           <strong>Safety guarantee</strong>
           <div style={{ marginTop: 4 }}>
-            AppVault will compress files into its vault storage. Your original application
+            ShrinkOS will compress files into its vault storage. Your original application
             remains fully intact. You can restore it at any time from the Applications page.
           </div>
         </div>

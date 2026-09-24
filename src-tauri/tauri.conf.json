@@ -1,5 +1,5 @@
 {
-  "productName": "AppVault",
+  "productName": "ShrinkOS",
   "version": "0.1.0",
   "identifier": "com.appvault.desktop",
   "build": {
@@ -12,7 +12,7 @@
     "withGlobalTauri": false,
     "windows": [
       {
-        "title": "AppVault",
+        "title": "ShrinkOS",
         "width": 1200,
         "height": 800,
         "minWidth": 900,

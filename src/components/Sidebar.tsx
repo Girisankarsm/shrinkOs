@@ -34,7 +34,7 @@ export default function Sidebar({ currentPage, onNavigate }: SidebarProps) {
           </svg>
         </div>
         <div>
-          <div className="sidebar-logo-text">AppVault</div>
+          <div className="sidebar-logo-text">ShrinkOS</div>
           <div className="sidebar-logo-version">
             v{systemInfo?.app_version ?? '0.1.0'} M1
           </div>

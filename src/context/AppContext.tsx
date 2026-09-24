@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { api, SystemInfo, DiskStats, AppManifest, VaultStats } from '../lib/api';
+import { api, SystemInfo, DiskStats, AppManifest, DiscoveredApp, VaultStats } from '../lib/api';
 
 // ── Types ─────────────────────────────────────────────────────────────────
 
@@ -7,6 +7,8 @@ interface AppContextValue {
   systemInfo: SystemInfo | null;
   diskStats: DiskStats | null;
   managedApps: AppManifest[];
+  discoveredApps: DiscoveredApp[];
+  setDiscoveredApps: (apps: DiscoveredApp[]) => void;
   vaultStats: VaultStats | null;
   isLoading: boolean;
   error: string | null;
@@ -31,6 +33,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [systemInfo, setSystemInfo] = useState<SystemInfo | null>(null);
   const [diskStats, setDiskStats] = useState<DiskStats | null>(null);
   const [managedApps, setManagedApps] = useState<AppManifest[]>([]);
+  const [discoveredApps, setDiscoveredAppsState] = useState<DiscoveredApp[]>(() => {
+    try {
+      const saved = localStorage.getItem('appvault-discovered-apps');
+      return saved ? JSON.parse(saved) as DiscoveredApp[] : [];
+    } catch {
+      return [];
+    }
+  });
   const [vaultStats, setVaultStats] = useState<VaultStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -40,6 +50,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setThemeState(t);
     document.documentElement.setAttribute('data-theme', t);
     localStorage.setItem('appvault-theme', t);
+  }, []);
+
+  const setDiscoveredApps = useCallback((apps: DiscoveredApp[]) => {
+    setDiscoveredAppsState(apps);
+    localStorage.setItem('appvault-discovered-apps', JSON.stringify(apps));
   }, []);
 
   // Restore theme from localStorage
@@ -66,7 +81,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setVaultStats(vault);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
-      setError(`Failed to load AppVault data: ${msg}`);
+      setError(`Failed to load ShrinkOS data: ${msg}`);
     } finally {
       setIsLoading(false);
     }
@@ -79,6 +94,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   return (
     <AppContext.Provider value={{
       systemInfo, diskStats, managedApps, vaultStats,
+      discoveredApps, setDiscoveredApps,
       isLoading, error, refresh, theme, setTheme,
     }}>
       {children}
