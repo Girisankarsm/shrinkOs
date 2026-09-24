@@ -200,7 +200,11 @@ function ApplicationList({
   hasScanned: boolean;
   scanning: boolean;
 }) {
-  const managedPaths = new Set(managedApps.map(a => a.original_path));
+  const managedPaths = new Set(
+    managedApps
+      .filter(app => app.status === 'managed')
+      .map(app => app.original_path),
+  );
 
   if (scanning && discovered.length === 0) {
     return (
