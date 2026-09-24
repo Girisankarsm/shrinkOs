@@ -3,7 +3,6 @@ import { api, Config, formatBytes } from '../lib/api';
 import { useAppContext } from '../context/AppContext';
 
 export default function SettingsPage() {
-  const { theme, setTheme } = useAppContext();
   const [config, setConfig] = useState<Config | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -60,29 +59,6 @@ export default function SettingsPage() {
 
         {config && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)', maxWidth: 600 }}>
-
-            {/* Appearance */}
-            <SettingSection title="Appearance">
-              <SettingRow
-                label="Theme"
-                description="Choose between dark and light interface"
-              >
-                <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-                  <button
-                    className={`btn btn-sm ${theme === 'dark' ? 'btn-primary' : 'btn-secondary'}`}
-                    onClick={() => setTheme('dark')}
-                  >
-                    ◐ Dark
-                  </button>
-                  <button
-                    className={`btn btn-sm ${theme === 'light' ? 'btn-primary' : 'btn-secondary'}`}
-                    onClick={() => setTheme('light')}
-                  >
-                    ○ Light
-                  </button>
-                </div>
-              </SettingRow>
-            </SettingSection>
 
             {/* Compression */}
             <SettingSection title="Compression">

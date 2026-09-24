@@ -86,20 +86,6 @@
   --transition-slow:   350ms ease;
 }
 
-/* Light mode override */
-[data-theme="light"] {
-  --color-bg-base:       #FFF9F0;
-  --color-bg-surface:    #F7F2EB;
-  --color-bg-elevated:   #EDF1F6;
-  --color-bg-overlay:    #D0E3FF;
-  --color-border:        #BAD6EB;
-  --color-border-subtle: rgba(51, 78, 172, 0.14);
-  --color-text-primary:  #081F5C;
-  --color-text-secondary:#334EAC;
-  --color-text-muted:    #7096D1;
-  --color-text-inverse:  #FFF9F0;
-}
-
 /* ── Reset & Base ─────────────────────────────────────────────────────── */
 *, *::before, *::after {
   box-sizing: border-box;

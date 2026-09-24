@@ -13,8 +13,6 @@ interface AppContextValue {
   isLoading: boolean;
   error: string | null;
   refresh: () => Promise<void>;
-  theme: 'dark' | 'light';
-  setTheme: (t: 'dark' | 'light') => void;
 }
 
 // ── Context ───────────────────────────────────────────────────────────────
@@ -44,26 +42,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [vaultStats, setVaultStats] = useState<VaultStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [theme, setThemeState] = useState<'dark' | 'light'>('dark');
-
-  const setTheme = useCallback((t: 'dark' | 'light') => {
-    setThemeState(t);
-    document.documentElement.setAttribute('data-theme', t);
-    localStorage.setItem('appvault-theme', t);
-  }, []);
 
   const setDiscoveredApps = useCallback((apps: DiscoveredApp[]) => {
     setDiscoveredAppsState(apps);
     localStorage.setItem('appvault-discovered-apps', JSON.stringify(apps));
   }, []);
-
-  // Restore theme from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem('appvault-theme') as 'dark' | 'light' | null;
-    if (saved) {
-      setTheme(saved);
-    }
-  }, [setTheme]);
 
   const refresh = useCallback(async () => {
     setIsLoading(true);
@@ -95,7 +78,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     <AppContext.Provider value={{
       systemInfo, diskStats, managedApps, vaultStats,
       discoveredApps, setDiscoveredApps,
-      isLoading, error, refresh, theme, setTheme,
+      isLoading, error, refresh,
     }}>
       {children}
     </AppContext.Provider>

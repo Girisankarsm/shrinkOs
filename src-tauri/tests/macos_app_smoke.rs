@@ -24,6 +24,10 @@ async fn real_macos_app_optimize_verify_restore_smoke() {
     let workspace = TempDir::new().expect("temporary workspace failed");
     let source_app = workspace.path().join("The Unarchiver.app");
     copy_directory(installed_app, &source_app);
+    let expected_app = workspace.path().join("expected").join("The Unarchiver.app");
+    fs::create_dir_all(expected_app.parent().expect("expected app parent missing"))
+        .expect("expected app directory failed");
+    copy_directory(&source_app, &expected_app);
     let restore_app = workspace.path().join("restored").join("The Unarchiver.app");
     let vault_path = workspace.path().join("vault");
     fs::create_dir_all(&vault_path).expect("vault directory failed");
@@ -74,6 +78,7 @@ async fn real_macos_app_optimize_verify_restore_smoke() {
     assert_eq!(manifest.original_size, original_size);
     assert_eq!(manifest.file_count, file_count);
     assert_eq!(manifest.files.len() as u64, file_count);
+    assert!(!source_app.exists(), "optimized source app was not removed");
 
     let integrity_failures = verify_manifest(&manifest);
     assert!(integrity_failures.is_empty(), "vault integrity failed: {integrity_failures:?}");
@@ -90,7 +95,7 @@ async fn real_macos_app_optimize_verify_restore_smoke() {
     let restored_analysis = analyze_application(&restore_app).expect("restored analysis failed");
     assert_eq!(restored_analysis.total_size_bytes, original_size);
     assert_eq!(restored_analysis.file_count, file_count);
-    assert_same_files(&source_app, &restore_app, &analysis.files);
+    assert_same_files(&expected_app, &restore_app, &analysis.files);
 
     println!(
         "SMOKE_MEASUREMENTS original_size={} file_count={} baseline_fixed_zstd_size={} baseline_fixed_zstd_time_ms={} adaptive_size={} adaptive_vault_size={} adaptive_space_saved={} adaptive_vs_fixed_saved={} adaptive_worse_files={} adaptive_wall_time_ms={} adaptive_file_compression_time_ms={} adaptive_decompression_probe_time_ms={} restore_time_ms={} selected_levels={:?} integrity=PASS",

@@ -271,6 +271,11 @@ impl Optimizer {
         let manifest_json = manifest.to_json()?;
         atomic_write(&manifest_path, &manifest_json)?;
 
+        // The verified vault is now the source of truth. Remove the original
+        // bundle so optimization produces an actual reduction on disk.
+        std::fs::remove_dir_all(&app_path)
+            .map_err(|e| AppError::Io(format!("remove original app '{}': {e}", app_path.display())))?;
+
         // Persist to database.
         db.upsert_application(&manifest)?;
         db.log_operation(

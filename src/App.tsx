@@ -7,7 +7,7 @@ import ApplicationsPage from './pages/Applications';
 import OptimizePage from './pages/Optimize';
 import SettingsPage from './pages/Settings';
 
-type Page = 'dashboard' | 'applications' | 'optimize' | 'settings';
+type Page = 'dashboard' | 'applications' | 'optimize' | 'restore' | 'settings';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<Page>('dashboard');
@@ -19,7 +19,8 @@ export default function App() {
         <main className="main-content">
           {currentPage === 'dashboard'    && <Dashboard />}
           {currentPage === 'applications' && <ApplicationsPage />}
-          {currentPage === 'optimize'     && <OptimizePage />}
+          {currentPage === 'optimize'     && <ApplicationsPage />}
+          {currentPage === 'restore'      && <OptimizePage />}
           {currentPage === 'settings'     && <SettingsPage />}
         </main>
       </div>
