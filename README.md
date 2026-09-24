@@ -14,6 +14,16 @@ AppVault is a macOS Tauri application that compresses application files into a l
 
 AppVault scans each selected application, compresses eligible files with Zstandard, and stores the compressed files in its vault. Already-compressed files are kept in their original form. Reported savings equal the original file size minus the stored size. The original application is never replaced during optimization.
 
+## Compression Architecture
+
+1. Analyze the selected `.app` bundle and classify its files.
+2. Compress eligible files with Zstandard (Zstd).
+3. Store compressed files and a manifest in the local AppVault vault.
+4. Verify restored content with Blake3 hashes.
+5. Restore files to the original path on request.
+
+The current MVP uses file-by-file compression. Chunking, deduplication, cloud storage, and filesystem virtualization are not implemented.
+
 ## Run and Test
 
 ```sh
