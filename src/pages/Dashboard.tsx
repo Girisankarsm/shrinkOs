@@ -3,7 +3,7 @@ import { formatBytes } from '../lib/api';
 import { useAppContext } from '../context/AppContext';
 
 export default function Dashboard() {
-  const { diskStats, vaultStats, managedApps, isLoading } = useAppContext();
+  const { diskStats, vaultStats, managedApps, isLoading, error } = useAppContext();
 
   if (isLoading) {
     return (
@@ -27,6 +27,7 @@ export default function Dashboard() {
 
   const usedFraction = total > 0 ? (used / total) : 0;
   const vaultFraction = total > 0 ? (vaultBytes / total) : 0;
+  const displayBytes = (bytes: number) => error ? '—' : formatBytes(bytes);
 
   return (
     <>
@@ -39,6 +40,19 @@ export default function Dashboard() {
       </header>
 
       <div className="page-body">
+        {error && (
+          <div className="alert alert-error mb-6">
+            <span>⚠</span>
+            <div>
+              <strong>AppVault data is unavailable</strong>
+              <div>{error}</div>
+              <div style={{ marginTop: 4 }}>
+                Launch the native Tauri app with <strong>npm run desktop</strong>; the browser preview cannot access macOS disk or application bundles.
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Milestone banner */}
         <div className="milestone-banner">
           <span>⚡</span>
@@ -49,16 +63,16 @@ export default function Dashboard() {
 
         {/* Stat cards */}
         <div className="stat-grid">
-          <StatCard label="Total Disk" value={formatBytes(total)} />
-          <StatCard label="Used" value={formatBytes(used)} sub={`${((usedFraction) * 100).toFixed(1)}% of total`} />
-          <StatCard label="Available" value={formatBytes(available)} variant="accent" />
-          <StatCard label="AppVault Size" value={formatBytes(vaultBytes)} />
-          <StatCard label="Original Apps" value={formatBytes(originalBytes)} />
+          <StatCard label="Total Disk" value={displayBytes(total)} />
+          <StatCard label="Used" value={displayBytes(used)} sub={error ? 'Unavailable' : `${((usedFraction) * 100).toFixed(1)}% of total`} />
+          <StatCard label="Available" value={displayBytes(available)} variant="accent" />
+          <StatCard label="AppVault Size" value={displayBytes(vaultBytes)} />
+          <StatCard label="Original Apps" value={displayBytes(originalBytes)} />
           <StatCard
             label="Space Saved"
-            value={savedBytes > 0 ? formatBytes(savedBytes) : '—'}
+            value={error ? '—' : savedBytes > 0 ? formatBytes(savedBytes) : '—'}
             variant="success"
-            sub={savedBytes > 0 && originalBytes > 0 ? `${((savedBytes / originalBytes) * 100).toFixed(1)}% reduction` : 'Optimize apps to start saving'}
+            sub={error ? 'Unavailable' : savedBytes > 0 && originalBytes > 0 ? `${((savedBytes / originalBytes) * 100).toFixed(1)}% reduction` : 'Optimize apps to start saving'}
           />
         </div>
 
@@ -78,15 +92,15 @@ export default function Dashboard() {
           <div className="storage-bar-legend">
             <div className="legend-item">
               <div className="legend-dot" style={{ background: 'hsl(220, 10%, 40%)' }} />
-              Used — {formatBytes(used)}
+              Used — {displayBytes(used)}
             </div>
             <div className="legend-item">
               <div className="legend-dot" style={{ background: 'var(--color-accent-500)' }} />
-              AppVault — {formatBytes(vaultBytes)}
+              AppVault — {displayBytes(vaultBytes)}
             </div>
             <div className="legend-item">
               <div className="legend-dot" style={{ background: 'var(--color-bg-overlay)' }} />
-              Free — {formatBytes(available)}
+              Free — {displayBytes(available)}
             </div>
           </div>
         </div>

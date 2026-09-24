@@ -1,7 +1,7 @@
 {
   "productName": "AppVault",
   "version": "0.1.0",
-  "identifier": "com.appvault.app",
+  "identifier": "com.appvault.desktop",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:5173",
@@ -30,6 +30,7 @@
     }
   },
   "bundle": {
-    "active": false
+    "active": true,
+    "targets": ["app"]
   }
 }

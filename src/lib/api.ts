@@ -4,6 +4,22 @@
 
 import { invoke } from "@tauri-apps/api/core";
 
+function ensureTauriRuntime(): void {
+  const hasTauriBridge = typeof window !== "undefined" && Boolean((window as any).__TAURI_INTERNALS__);
+  const isTauriProtocol = typeof window !== "undefined" && window.location.protocol.startsWith("tauri:");
+
+  if (!hasTauriBridge && !isTauriProtocol) {
+    throw new Error(
+      "AppVault must be launched from the native Tauri desktop app. Please run the desktop app instead of the web preview."
+    );
+  }
+}
+
+async function tauriInvoke<T>(command: string, args: Record<string, unknown> = {}): Promise<T> {
+  ensureTauriRuntime();
+  return invoke<T>(command, args);
+}
+
 // ── Types ─────────────────────────────────────────────────────────────────
 
 export interface SystemInfo {
@@ -143,42 +159,42 @@ export interface AppError {
 
 export const api = {
   // System
-  getSystemInfo: (): Promise<SystemInfo> => invoke("get_system_info"),
-  getDiskStats: (): Promise<DiskStats> => invoke("get_disk_stats"),
+  getSystemInfo: (): Promise<SystemInfo> => tauriInvoke("get_system_info"),
+  getDiskStats: (): Promise<DiskStats> => tauriInvoke("get_disk_stats"),
 
   // Applications
   discoverApplications: (): Promise<DiscoveredApp[]> =>
-    invoke("discover_applications"),
+    tauriInvoke("discover_applications"),
   analyzeApplication: (appPath: string): Promise<ApplicationAnalysis> =>
-    invoke("analyze_application", { appPath }),
+    tauriInvoke("analyze_application", { appPath }),
   getManagedApplications: (): Promise<AppManifest[]> =>
-    invoke("get_managed_applications"),
+    tauriInvoke("get_managed_applications"),
   getApplicationDetail: (appId: string): Promise<AppManifest | null> =>
-    invoke("get_application_detail", { appId }),
+    tauriInvoke("get_application_detail", { appId }),
 
   // Optimization
   startOptimization: (appPath: string): Promise<string> =>
-    invoke("start_optimization", { appPath }),
+    tauriInvoke("start_optimization", { appPath }),
   getOptimizationProgress: (appId: string): Promise<OptimizationProgress | null> =>
-    invoke("get_optimization_progress", { appId }),
+    tauriInvoke("get_optimization_progress", { appId }),
   cancelOptimization: (appId: string): Promise<void> =>
-    invoke("cancel_optimization", { appId }),
+    tauriInvoke("cancel_optimization", { appId }),
 
   // Restore
   restoreApplication: (appId: string): Promise<void> =>
-    invoke("restore_application", { appId }),
+    tauriInvoke("restore_application", { appId }),
   getRestoreProgress: (appId: string): Promise<OptimizationProgress | null> =>
-    invoke("get_restore_progress", { appId }),
+    tauriInvoke("get_restore_progress", { appId }),
 
   // Settings
-  getSettings: (): Promise<Config> => invoke("get_settings"),
+  getSettings: (): Promise<Config> => tauriInvoke("get_settings"),
   updateSettings: (newConfig: Config): Promise<void> =>
-    invoke("update_settings", { newConfig }),
+    tauriInvoke("update_settings", { newConfig }),
 
   // Vault
-  getVaultStats: (): Promise<VaultStats> => invoke("get_vault_stats"),
+  getVaultStats: (): Promise<VaultStats> => tauriInvoke("get_vault_stats"),
   verifyVaultIntegrity: (): Promise<string[]> =>
-    invoke("verify_vault_integrity"),
+    tauriInvoke("verify_vault_integrity"),
 };
 
 // ── Utility functions ─────────────────────────────────────────────────────

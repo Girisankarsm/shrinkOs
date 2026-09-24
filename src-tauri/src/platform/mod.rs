@@ -28,7 +28,7 @@ pub mod macos {
         for search in APP_SEARCH_PATHS {
             let dir = Path::new(search);
             if dir.exists() {
-                collect_app_bundles(dir, &mut paths);
+                collect_app_bundles(dir, &mut paths, 0);
             }
         }
 
@@ -36,7 +36,7 @@ pub mod macos {
         if let Some(home) = dirs::home_dir() {
             let user_apps = home.join("Applications");
             if user_apps.exists() {
-                collect_app_bundles(&user_apps, &mut paths);
+                collect_app_bundles(&user_apps, &mut paths, 0);
             }
         }
 
@@ -44,12 +44,14 @@ pub mod macos {
         Ok(paths)
     }
 
-    fn collect_app_bundles(dir: &Path, out: &mut Vec<PathBuf>) {
+    fn collect_app_bundles(dir: &Path, out: &mut Vec<PathBuf>, depth: u8) {
         if let Ok(entries) = std::fs::read_dir(dir) {
             for entry in entries.flatten() {
                 let p = entry.path();
                 if p.extension().and_then(|s| s.to_str()) == Some("app") {
                     out.push(p);
+                } else if depth < 2 && entry.file_type().map(|t| t.is_dir()).unwrap_or(false) {
+                    collect_app_bundles(&p, out, depth + 1);
                 }
             }
         }

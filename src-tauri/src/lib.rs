@@ -51,11 +51,11 @@ pub fn run() {
             // Load or create config.
             let config = services::config::Config::load_or_default(&vault_path)?;
 
-            app.manage(Arc::new(Mutex::new(AppState {
+            app.manage(Mutex::new(AppState {
                 db: Arc::clone(&db),
                 vault_path: vault_path.clone(),
                 config,
-            })));
+            }));
 
             app.manage(Arc::new(Mutex::new(HashMap::<String, services::optimizer::OptimizationProgress>::new())));
             app.manage(Arc::new(Mutex::new(HashMap::<String, tokio::sync::watch::Sender<bool>>::new())));
