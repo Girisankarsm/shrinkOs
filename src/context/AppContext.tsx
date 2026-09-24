@@ -9,6 +9,8 @@ interface AppContextValue {
   managedApps: AppManifest[];
   discoveredApps: DiscoveredApp[];
   setDiscoveredApps: (apps: DiscoveredApp[]) => void;
+  hasScanned: boolean;
+  setHasScanned: (value: boolean) => void;
   vaultStats: VaultStats | null;
   permissionStatus: PermissionStatus | null;
   isLoading: boolean;
@@ -40,6 +42,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       return [];
     }
   });
+  const [hasScanned, setHasScannedState] = useState<boolean>(() => {
+    return localStorage.getItem('shrinkos-has-scanned') === '1';
+  });
   const [vaultStats, setVaultStats] = useState<VaultStats | null>(null);
   const [permissionStatus, setPermissionStatus] = useState<PermissionStatus | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -48,6 +53,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const setDiscoveredApps = useCallback((apps: DiscoveredApp[]) => {
     setDiscoveredAppsState(apps);
     localStorage.setItem('appvault-discovered-apps', JSON.stringify(apps));
+  }, []);
+
+  const setHasScanned = useCallback((value: boolean) => {
+    setHasScannedState(value);
+    localStorage.setItem('shrinkos-has-scanned', value ? '1' : '0');
   }, []);
 
   const refresh = useCallback(async (silent = false) => {
@@ -96,7 +106,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   return (
     <AppContext.Provider value={{
       systemInfo, diskStats, managedApps, vaultStats, permissionStatus,
-      discoveredApps, setDiscoveredApps,
+      discoveredApps, setDiscoveredApps, hasScanned, setHasScanned,
       isLoading, error, refresh,
     }}>
       {children}

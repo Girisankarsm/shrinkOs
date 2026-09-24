@@ -7,7 +7,7 @@ type Phase = 'list' | 'analyzing' | 'confirm' | 'progress' | 'done' | 'error';
 export default function ApplicationsPage() {
   const { managedApps, discoveredApps, setDiscoveredApps, refresh } = useAppContext();
   const [scanning, setScanning] = useState(false);
-  const [hasScanned, setHasScanned] = useState(false);
+  const { hasScanned, setHasScanned } = useAppContext();
   const [selectedApp, setSelectedApp] = useState<DiscoveredApp | null>(null);
   const [analysis, setAnalysis] = useState<ApplicationAnalysis | null>(null);
   const [phase, setPhase] = useState<Phase>('list');
