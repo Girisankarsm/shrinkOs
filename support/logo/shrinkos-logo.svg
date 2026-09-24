@@ -1,0 +1,21 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" rx="96" fill="#050A18"/>
+  <path d="M184 156C184 136.118 200.118 120 220 120H322L380 178V294C380 313.882 363.882 330 344 330H220C200.118 330 184 313.882 184 294V156Z" fill="url(#back)" fill-opacity="0.72" stroke="#BAD6EB" stroke-opacity="0.5" stroke-width="5"/>
+  <path d="M140 190C140 170.118 156.118 154 176 154H278L336 212V328C336 347.882 319.882 364 300 364H176C156.118 364 140 347.882 140 328V190Z" fill="url(#middle)" fill-opacity="0.82" stroke="#D0E3FF" stroke-opacity="0.72" stroke-width="6"/>
+  <path d="M100 228C100 208.118 116.118 192 136 192H238L296 250V366C296 385.882 279.882 402 260 402H136C116.118 402 100 385.882 100 366V228Z" fill="url(#front)" stroke="#EDF1F6" stroke-opacity="0.85" stroke-width="7"/>
+  <path d="M238 192V236C238 243.732 244.268 250 252 250H296" fill="#D0E3FF" fill-opacity="0.42"/>
+  <path d="M93 370C64 382 49 400 32 429" stroke="#334EAC" stroke-width="13" stroke-linecap="round"/>
+  <path d="M419 370C448 382 463 400 480 429" stroke="#7096D1" stroke-width="13" stroke-linecap="round"/>
+  <path d="M122 389C93 395 73 406 54 424" stroke="#D0E3FF" stroke-width="8" stroke-linecap="round"/>
+  <path d="M390 389C419 395 439 406 458 424" stroke="#BAD6EB" stroke-width="8" stroke-linecap="round"/>
+  <path d="M185 410H327C336.389 410 344 417.611 344 427V456C344 465.389 336.389 473 327 473H185C175.611 473 168 465.389 168 456V427C168 417.611 175.611 410 185 410Z" fill="url(#vault)" stroke="#D0E3FF" stroke-width="5"/>
+  <path d="M175 410L184 397H328L337 410H175Z" fill="#EDF1F6" fill-opacity="0.9"/>
+  <path d="M145 420L116 407L127 431L104 441L145 446L132 431L145 420Z" fill="#D0E3FF"/>
+  <path d="M367 420L396 407L385 431L408 441L367 446L380 431L367 420Z" fill="#D0E3FF"/>
+  <defs>
+    <linearGradient id="back" x1="210" y1="120" x2="354" y2="330" gradientUnits="userSpaceOnUse"><stop stop-color="#BAD6EB"/><stop offset="1" stop-color="#334EAC"/></linearGradient>
+    <linearGradient id="middle" x1="164" y1="154" x2="320" y2="364" gradientUnits="userSpaceOnUse"><stop stop-color="#D0E3FF"/><stop offset="1" stop-color="#7096D1"/></linearGradient>
+    <linearGradient id="front" x1="118" y1="192" x2="278" y2="402" gradientUnits="userSpaceOnUse"><stop stop-color="#EDF1F6"/><stop offset="0.45" stop-color="#7096D1"/><stop offset="1" stop-color="#334EAC"/></linearGradient>
+    <linearGradient id="vault" x1="168" y1="410" x2="344" y2="473" gradientUnits="userSpaceOnUse"><stop stop-color="#7096D1"/><stop offset="1" stop-color="#334EAC"/></linearGradient>
+  </defs>
+</svg>

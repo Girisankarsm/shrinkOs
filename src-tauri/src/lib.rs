@@ -28,7 +28,7 @@ pub fn run() {
     // Initialise structured logging before anything else.
     logging::init();
 
-    info!(version = env!("CARGO_PKG_VERSION"), "AppVault starting");
+    info!(version = env!("CARGO_PKG_VERSION"), "ShrinkOS starting");
 
     tauri::Builder::default()
         // ── Plugins ────────────────────────────────────────────────

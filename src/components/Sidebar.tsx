@@ -1,7 +1,7 @@
 import React from 'react';
 import { formatBytes } from '../lib/api';
 import { useAppContext } from '../context/AppContext';
-import shrinkosLogo from '../assets/shrinkos-logo.svg';
+import shrinkosLogo from '../../support/logo/shrinkos-logo.svg';
 
 type Page = 'dashboard' | 'applications' | 'optimize' | 'settings';
 

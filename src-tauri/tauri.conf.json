@@ -1,7 +1,7 @@
 {
   "productName": "ShrinkOS",
   "version": "0.1.0",
-  "identifier": "com.appvault.desktop",
+  "identifier": "com.shrinkos.desktop",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:5173",
