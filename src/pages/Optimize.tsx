@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { api, AppManifest, OptimizationProgress, formatBytes } from '../lib/api';
+import { api, AppManifest, OptimizationProgress, formatBytes, formatApiError } from '../lib/api';
 import { useAppContext } from '../context/AppContext';
 
 export default function OptimizePage() {
@@ -33,7 +33,7 @@ export default function OptimizePage() {
         }
       }, 500);
     } catch (e: unknown) {
-      setError(String(e));
+      setError(formatApiError(e));
       setRestoring(null);
     }
   }, [refresh]);

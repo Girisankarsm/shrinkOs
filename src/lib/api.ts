@@ -31,6 +31,12 @@ export interface SystemInfo {
   milestone: number;
 }
 
+export interface PermissionStatus {
+  app_management: boolean;
+  requires_approval: boolean;
+  message: string;
+}
+
 export interface DiskStats {
   total_bytes: number;
   used_bytes: number;
@@ -161,6 +167,8 @@ export const api = {
   // System
   getSystemInfo: (): Promise<SystemInfo> => tauriInvoke("get_system_info"),
   getDiskStats: (): Promise<DiskStats> => tauriInvoke("get_disk_stats"),
+  getPermissionStatus: (): Promise<PermissionStatus> => tauriInvoke("get_permission_status"),
+  openPermissionSettings: (): Promise<void> => tauriInvoke("open_permission_settings"),
 
   // Applications
   discoverApplications: (): Promise<DiscoveredApp[]> =>
@@ -214,4 +222,15 @@ export function formatRatio(ratio: number): string {
   // ratio = stored / original; e.g. 0.6 → "1.67x"
   if (ratio <= 0 || ratio >= 1) return "—";
   return `${(1 / ratio).toFixed(2)}x`;
+}
+
+export function formatApiError(error: unknown): string {
+  if (typeof error === 'string') return error;
+  if (error && typeof error === 'object') {
+    const value = error as { detail?: unknown; kind?: unknown; message?: unknown };
+    if (typeof value.detail === 'string') return value.detail;
+    if (typeof value.message === 'string') return value.message;
+    if (typeof value.kind === 'string') return value.kind;
+  }
+  return String(error);
 }

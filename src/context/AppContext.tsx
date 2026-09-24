@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { api, SystemInfo, DiskStats, AppManifest, DiscoveredApp, VaultStats } from '../lib/api';
+import { api, SystemInfo, DiskStats, AppManifest, DiscoveredApp, VaultStats, PermissionStatus } from '../lib/api';
 
 // ── Types ─────────────────────────────────────────────────────────────────
 
@@ -10,6 +10,7 @@ interface AppContextValue {
   discoveredApps: DiscoveredApp[];
   setDiscoveredApps: (apps: DiscoveredApp[]) => void;
   vaultStats: VaultStats | null;
+  permissionStatus: PermissionStatus | null;
   isLoading: boolean;
   error: string | null;
   refresh: () => Promise<void>;
@@ -40,6 +41,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   });
   const [vaultStats, setVaultStats] = useState<VaultStats | null>(null);
+  const [permissionStatus, setPermissionStatus] = useState<PermissionStatus | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,16 +54,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     setError(null);
     try {
-      const [info, disk, apps, vault] = await Promise.all([
+      const [info, disk, apps, vault, permissions] = await Promise.all([
         api.getSystemInfo(),
         api.getDiskStats(),
         api.getManagedApplications(),
         api.getVaultStats(),
+        api.getPermissionStatus(),
       ]);
       setSystemInfo(info);
       setDiskStats(disk);
       setManagedApps(apps);
       setVaultStats(vault);
+      setPermissionStatus(permissions);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
       setError(`Failed to load ShrinkOS data: ${msg}`);
@@ -76,7 +80,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   return (
     <AppContext.Provider value={{
-      systemInfo, diskStats, managedApps, vaultStats,
+      systemInfo, diskStats, managedApps, vaultStats, permissionStatus,
       discoveredApps, setDiscoveredApps,
       isLoading, error, refresh,
     }}>

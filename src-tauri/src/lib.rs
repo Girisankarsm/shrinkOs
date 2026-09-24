@@ -68,6 +68,8 @@ pub fn run() {
             // System info
             commands::system::get_system_info,
             commands::system::get_disk_stats,
+            commands::system::get_permission_status,
+            commands::system::open_permission_settings,
             // Application management
             commands::apps::discover_applications,
             commands::apps::analyze_application,

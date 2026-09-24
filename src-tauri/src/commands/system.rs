@@ -17,6 +17,57 @@ pub struct SystemInfo {
     pub milestone: u8,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct PermissionStatus {
+    pub app_management: bool,
+    pub requires_approval: bool,
+    pub message: String,
+}
+
+#[tauri::command]
+pub fn get_permission_status() -> AppResult<PermissionStatus> {
+    #[cfg(target_os = "macos")]
+    {
+        let app_management = std::process::Command::new("/usr/bin/test")
+            .args(["-w", "/Applications"])
+            .status()
+            .map(|status| status.success())
+            .unwrap_or(false);
+
+        return Ok(PermissionStatus {
+            app_management,
+            requires_approval: !app_management,
+            message: if app_management {
+                "ShrinkOS can update and restore applications.".to_string()
+            } else {
+                "Allow ShrinkOS in System Settings > Privacy & Security > App Management to update and restore applications.".to_string()
+            },
+        });
+    }
+
+    #[cfg(not(target_os = "macos"))]
+    {
+        Ok(PermissionStatus {
+            app_management: true,
+            requires_approval: false,
+            message: "Application management permissions are available.".to_string(),
+        })
+    }
+}
+
+#[tauri::command]
+pub fn open_permission_settings() -> AppResult<()> {
+    #[cfg(target_os = "macos")]
+    {
+        std::process::Command::new("/usr/bin/open")
+            .arg("x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension?Privacy_AppManagement")
+            .status()
+            .map_err(|e| crate::error::AppError::Io(format!("open permission settings: {e}")))?;
+    }
+
+    Ok(())
+}
+
 #[tauri::command]
 pub fn get_system_info(state: State<'_, Mutex<AppState>>) -> AppResult<SystemInfo> {
     let st = state.lock().unwrap();

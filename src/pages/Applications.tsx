@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { api, DiscoveredApp, ApplicationAnalysis, OptimizationProgress, formatBytes } from '../lib/api';
+import { api, DiscoveredApp, ApplicationAnalysis, OptimizationProgress, formatBytes, formatApiError } from '../lib/api';
 import { useAppContext } from '../context/AppContext';
 
 type Phase = 'list' | 'analyzing' | 'confirm' | 'progress' | 'done' | 'error';
@@ -22,7 +22,7 @@ export default function ApplicationsPage() {
       const apps = await api.discoverApplications();
       setDiscoveredApps(apps.filter(a => a.compatibility !== 'UNSUPPORTED'));
     } catch (e: unknown) {
-      setError(String(e));
+      setError(formatApiError(e));
     } finally {
       setScanning(false);
     }
@@ -42,7 +42,7 @@ export default function ApplicationsPage() {
       setAnalysis(result);
       setPhase('confirm');
     } catch (e: unknown) {
-      setError(String(e));
+      setError(formatApiError(e));
       setPhase('error');
     }
   }, []);
@@ -70,7 +70,7 @@ export default function ApplicationsPage() {
         }
       }, 500);
     } catch (e: unknown) {
-      setError(String(e));
+      setError(formatApiError(e));
       setPhase('error');
     }
   }, [selectedApp, refresh]);
