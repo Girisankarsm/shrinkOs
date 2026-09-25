@@ -2,6 +2,18 @@
 
 ShrinkOS is a native macOS Tauri application that reduces application storage locally. It stores a verified compressed copy in a private vault, removes the original application only after verification, and restores the application to its original path on request.
 
+## Download and Install
+
+Download the installer for your Mac with one click:
+
+- [Download for Apple silicon](https://github.com/Girisankarsm/shrinkOs/releases/download/v0.1.0/ShrinkOS_0.1.0_aarch64.dmg)
+- [Download for Intel](https://github.com/Girisankarsm/shrinkOs/releases/download/v0.1.0/ShrinkOS_0.1.0_x64.dmg)
+- [View all GitHub Releases](https://github.com/Girisankarsm/shrinkOs/releases)
+
+Open the DMG and drag **ShrinkOS** into **Applications**, then launch it from
+Launchpad or Finder. ShrinkOS supports macOS 11.0 and later on Apple silicon
+and Intel Macs.
+
 ## How to Use ShrinkOS
 
 1. Launch the native app, not the browser preview.
