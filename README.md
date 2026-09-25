@@ -6,8 +6,8 @@ ShrinkOS is a native macOS Tauri application that reduces application storage lo
 
 Download the installer for your Mac with one click:
 
-- [Download for Apple silicon](https://github.com/Girisankarsm/shrinkOs/releases/download/v0.1.2/ShrinkOS_0.1.2_aarch64.dmg)
-- [Download for Intel](https://github.com/Girisankarsm/shrinkOs/releases/download/v0.1.2/ShrinkOS_0.1.2_x64.dmg)
+- [Download for Apple silicon](https://github.com/Girisankarsm/shrinkOs/releases/download/v0.1.3/ShrinkOS_0.1.3_aarch64.dmg)
+- [Download for Intel](https://github.com/Girisankarsm/shrinkOs/releases/download/v0.1.3/ShrinkOS_0.1.3_x64.dmg)
 - [View all GitHub Releases](https://github.com/Girisankarsm/shrinkOs/releases)
 
 Open the DMG and drag **ShrinkOS** into **Applications**, then launch it from
@@ -97,7 +97,7 @@ Outputs:
 - `src-tauri/target/release/bundle/macos/ShrinkOS.app`
 - `src-tauri/target/release/bundle/dmg/ShrinkOS_<version>_<architecture>.dmg`
 
-Pushing a version tag such as `v0.1.2` runs the GitHub Actions release workflow,
+Pushing a version tag such as `v0.1.3` runs the GitHub Actions release workflow,
 builds Apple silicon and Intel DMGs, and attaches them to a GitHub Release.
 
 Run tests:
