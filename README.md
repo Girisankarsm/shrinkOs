@@ -80,7 +80,13 @@ Build the macOS application:
 npm run tauri build
 ```
 
-Output: `src-tauri/target/release/bundle/macos/ShrinkOS.app`
+Outputs:
+
+- `src-tauri/target/release/bundle/macos/ShrinkOS.app`
+- `src-tauri/target/release/bundle/dmg/ShrinkOS_<version>_<architecture>.dmg`
+
+Pushing a version tag such as `v0.1.0` runs the GitHub Actions release workflow,
+builds Apple silicon and Intel DMGs, and attaches them to a GitHub Release.
 
 Run tests:
 
