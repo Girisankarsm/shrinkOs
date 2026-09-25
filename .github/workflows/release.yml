@@ -48,6 +48,11 @@ jobs:
       - name: Build DMG
         run: npm run tauri build -- --target ${{ matrix.rust_target }} --bundles dmg
 
+      - name: Verify bundled app and DMG use the source logo
+        run: |
+          cmp src-tauri/icons/icon.icns src-tauri/target/${{ matrix.rust_target }}/release/bundle/macos/ShrinkOS.app/Contents/Resources/icon.icns
+          cmp src-tauri/icons/icon.icns src-tauri/target/${{ matrix.rust_target }}/release/bundle/dmg/icon.icns
+
       - name: Verify DMG was created
         run: test -n "$(find src-tauri/target/${{ matrix.rust_target }}/release/bundle/dmg -maxdepth 1 -name '*.dmg' -print -quit)"
 

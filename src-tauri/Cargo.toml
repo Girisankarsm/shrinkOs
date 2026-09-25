@@ -1,6 +1,6 @@
 [package]
 name = "shrinkos"
-version = "0.1.0"
+version = "0.1.1"
 description = "ShrinkOS - Local Application Storage Optimizer"
 authors = ["ShrinkOS Team"]
 license = "MIT"
