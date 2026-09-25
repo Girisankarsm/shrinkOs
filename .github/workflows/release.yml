@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing GitHub release tag to update (for example, v0.1.0)
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -42,8 +48,37 @@ jobs:
       - name: Build DMG
         run: npm run tauri build -- --target ${{ matrix.rust_target }} --bundles dmg
 
+      - name: Verify DMG was created
+        run: test -n "$(find src-tauri/target/${{ matrix.rust_target }}/release/bundle/dmg -maxdepth 1 -name '*.dmg' -print -quit)"
+
+      - name: Upload DMG artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dmg-${{ matrix.rust_target }}
+          path: src-tauri/target/${{ matrix.rust_target }}/release/bundle/dmg/*.dmg
+          if-no-files-found: error
+          retention-days: 1
+
+  publish:
+    name: Publish GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download DMG artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: dmg-*
+          merge-multiple: true
+          path: release-dmgs
+
+      - name: Verify both DMGs were downloaded
+        run: test "$(find release-dmgs -maxdepth 1 -name '*.dmg' | wc -l | tr -d ' ')" -eq 2
+
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: src-tauri/target/${{ matrix.rust_target }}/release/bundle/dmg/*.dmg
+          tag_name: ${{ inputs.release_tag || github.ref_name }}
+          files: release-dmgs/*.dmg
           generate_release_notes: true
+          overwrite_files: true
+          fail_on_unmatched_files: true
